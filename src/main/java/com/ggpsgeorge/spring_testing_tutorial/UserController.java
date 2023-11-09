@@ -57,7 +57,13 @@ public class UserController {
 
     @GetMapping("/all")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
-        return ResponseEntity.ok().body(entityListToDTO(userService.findAllUsers()));
+        List<User> users = userService.findAllUsers();
+
+        if(users.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok().body(entityListToDTO(users));
     }
 
     private UserDTO entityToDTO(User entity){
