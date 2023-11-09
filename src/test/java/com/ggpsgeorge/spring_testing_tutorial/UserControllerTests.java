@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ public class UserControllerTests {
     ObjectMapper objectMapper;
 
     @Test
-    public void testGetUserShouldReturn200Ok() throws Exception{
+    public void testGetUserShouldReturn200Ok() throws Exception {
         String email = "sonGoku@dbz.com";
         Long userId = 1L;
         String uri = ENDPOINT + "/" + userId;
@@ -55,7 +57,21 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testAddShouldReturn201Created() throws JsonProcessingException, Exception{
+    public void testGetUserShouldReturn404NotFound() throws Exception {
+        Long id = 1L;
+        String requestIdURI = ENDPOINT + "/" + id;
+
+        Mockito.when(userService.findUser(id)).thenThrow(NoSuchElementException.class);
+
+        mockMvc.perform(get(requestIdURI)
+            .contentType(CONTENT_TYPE))
+            .andExpect(status().isNotFound())
+            .andDo(MockMvcResultHandlers.print());   
+
+    }
+
+    @Test
+    public void testAddShouldReturn201Created() throws JsonProcessingException, Exception {
         String email = "sonGoku@dbz.com";
         User newUser = new User.UserBuilder()
             .id(1L)
@@ -82,14 +98,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testGetAllUsersShouldReturn204NoContent() throws Exception{
-        mockMvc.perform(get(ENDPOINT + "/all"))
-            .andExpect(status().isNoContent())
-            .andDo(MockMvcResultHandlers.print());
-    }
-
-    @Test
-    public void testAddShouldReturn400BadRequest() throws JsonProcessingException, Exception{
+    public void testAddShouldReturn400BadRequest() throws JsonProcessingException, Exception {
         User newUser = new User.UserBuilder()
             .firstName("")
             .lastName("")
@@ -106,16 +115,47 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testGetUserShouldReturn404NotFound() throws Exception{
-        Long id = 1L;
-        String requestIdURI = ENDPOINT + "/" + id;
+    public void testGetAllUsersShouldReturn204NoContent() throws Exception {
+        mockMvc.perform(get(ENDPOINT + "/all"))
+            .andExpect(status().isNoContent())
+            .andDo(MockMvcResultHandlers.print());
+    }
 
-        Mockito.when(userService.findUser(id)).thenThrow(NoSuchElementException.class);
+    @Test
+    public void testGetAllUsersShouldReturn200OK() throws Exception {
+        List<User> newUsers = new ArrayList<User>(2); 
+        String gokuEmail = "sonGoku@dbz.com";
+        String vegetaEmail = "princeVegeta@dbz.com";
 
-        mockMvc.perform(get(requestIdURI)
-            .contentType(CONTENT_TYPE))
-            .andExpect(status().isNotFound())
-            .andDo(MockMvcResultHandlers.print());   
+        User gokuUser = new User.UserBuilder()
+            .id(1L)
+            .firstName("Goku")
+            .lastName("Son")
+            .email(gokuEmail)
+            .password(MyUtils.generatePassword(7))
+            .build();
+        
+        User vegetaUser = new User.UserBuilder()
+            .id(2L)
+            .firstName("Vegeta")
+            .lastName("Prince")
+            .email(vegetaEmail)
+            .password(MyUtils.generatePassword(7))
+            .build();
+
+        newUsers.add(gokuUser);
+        newUsers.add(vegetaUser);
+
+        Mockito.when(userService.findAllUsers()).thenReturn(newUsers);
+
+        mockMvc.perform(get(ENDPOINT + "/all"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", Matchers.hasSize(2)))
+            .andExpect(jsonPath("$.[0].email", Matchers.is(gokuEmail)))
+            .andExpect(jsonPath("$.[0]password").doesNotExist())
+            .andExpect(jsonPath("$.[1].email", Matchers.is(vegetaEmail)))
+            .andExpect(jsonPath("$.[1]password").doesNotExist())
+            .andDo(MockMvcResultHandlers.print());
 
     }
 
