@@ -83,7 +83,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testGetAllUsersShouldReturn204NoContent() throws Exception{
+    public void testGetAllUsersShouldReturnEmptyList() throws Exception{
         mockMvc.perform(get(ENDPOINT + "/all"))
             .andExpect(status().isOk())
             .andExpect(content().string("[]"))
