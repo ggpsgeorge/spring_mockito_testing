@@ -8,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -150,11 +151,54 @@ public class UserControllerTests {
 
         mockMvc.perform(get(ENDPOINT + "/all"))
             .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$", Matchers.hasSize(2)))
-            .andExpect(jsonPath("$.[0].email", Matchers.is(gokuEmail)))
-            .andExpect(jsonPath("$.[0]password").doesNotExist())
-            .andExpect(jsonPath("$.[1].email", Matchers.is(vegetaEmail)))
-            .andExpect(jsonPath("$.[1]password").doesNotExist())
+            .andExpect(jsonPath("$[0].firstName", Matchers.is("Goku")))
+            .andExpect(jsonPath("$[0].email", Matchers.is(gokuEmail)))
+            .andExpect(jsonPath("$[0].password").doesNotExist())
+            .andExpect(jsonPath("$[1].lastName", Matchers.is("Prince")))
+            .andExpect(jsonPath("$[1].email", Matchers.is(vegetaEmail)))
+            .andExpect(jsonPath("$[1].password").doesNotExist())
+            .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void testPutUserShoulReturn404NotFound() throws JsonProcessingException, Exception {
+        String gokuEmail = "sonGoku@dbz.com";
+
+        User gokuUser = new User.UserBuilder()
+            .id(1L)
+            .firstName("Goku")
+            .lastName("Son")
+            .email(gokuEmail)
+            .password(MyUtils.generatePassword(7))
+            .build();
+        
+        String uri = ENDPOINT + "/put/" + gokuUser.getId();
+        String requestBody = objectMapper.writeValueAsString(gokuUser);
+
+        mockMvc.perform(put(uri).content(requestBody).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void testPutUserShoulReturn400BadRequest() throws JsonProcessingException, Exception {
+        String gokuEmail = "sonGoku@dbz.com";
+
+        User gokuUser = new User.UserBuilder()
+            .firstName("")
+            .lastName("Son")
+            .email(gokuEmail)
+            .build();
+        
+        String uri = ENDPOINT + "/put/" + gokuUser.getId();
+        String requestBody = objectMapper.writeValueAsString(gokuUser);
+
+        mockMvc.perform(put(uri).content(requestBody).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
             .andDo(MockMvcResultHandlers.print());
 
     }

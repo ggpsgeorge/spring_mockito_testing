@@ -1,6 +1,7 @@
 package com.ggpsgeorge.spring_testing_tutorial;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,24 @@ public class UserService {
 
     public List<User> findAllUsers(){
         return userRepository.findAll();
+    }
+
+    public User updateUser(Long id, User user){
+
+        try {
+            User persistedUser = findUser(id).orElseThrow();
+
+            persistedUser.setFirstName(user.getFirstName());
+            persistedUser.setLastName(user.getLastName());
+            persistedUser.setEmail(user.getEmail());
+            persistedUser.setPassword(user.getPassword());
+            User updatedUser = saveUser(persistedUser);
+
+            return updatedUser;
+        
+        } catch (NoSuchElementException e){
+            return null;
+        }
     }
 
 }
