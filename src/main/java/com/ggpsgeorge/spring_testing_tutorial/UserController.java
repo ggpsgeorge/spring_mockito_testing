@@ -7,7 +7,9 @@ import java.util.NoSuchElementException;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,12 +46,12 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable Long id){
-        try{
+        try {
             User persistedUser = userService.findUser(id).orElseThrow();
 
             return ResponseEntity.ok().body(entityToDTO(persistedUser));
 
-        }catch(NoSuchElementException e){
+        } catch (NoSuchElementException e){
             return ResponseEntity.notFound().build();
             
         }
@@ -73,8 +75,17 @@ public class UserController {
 
         if(updatedUser == null){ return ResponseEntity.notFound().build(); }
 
-        return ResponseEntity.accepted().body(entityToDTO(updatedUser));
+        return ResponseEntity.ok().body(entityToDTO(updatedUser));
                     
+    }
+
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<String> removeUser(@PathVariable Long id){
+        if(userService.deleteUser(id)){
+            return ResponseEntity.status(HttpStatusCode.valueOf(410)).body("User " + id + " was deleted!");
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     private UserDTO entityToDTO(User entity){

@@ -203,4 +203,54 @@ public class UserControllerTests {
 
     }
 
+    @Test
+    public void testPutUserShoulReturn200Ok() throws JsonProcessingException, Exception {
+        String gokuEmail = "sonGoku@dbz.com";
+
+        User gokuUser = new User.UserBuilder()
+            .id(1L)
+            .firstName("Goku")
+            .lastName("Son")
+            .email(gokuEmail)
+            .password(MyUtils.generatePassword(7))
+            .build();
+
+        String uri = ENDPOINT + "/put/" + gokuUser.getId();
+        String requestBody = objectMapper.writeValueAsString(gokuUser);
+
+        Mockito.when(userService.updateUser(gokuUser.getId(), gokuUser)).thenReturn(gokuUser);
+
+        mockMvc.perform(put(uri).content(requestBody).contentType(CONTENT_TYPE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email", Matchers.is(gokuEmail)))
+            .andExpect(jsonPath("$.password").doesNotExist())
+            .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void testRemoveUserShouldReturn410Gone() throws Exception {
+        Long userId = 1L;
+        String uri = ENDPOINT + "/remove/" + userId;
+
+        Mockito.when(userService.deleteUser(userId)).thenReturn(true);
+
+        mockMvc.perform(delete(uri))
+            .andExpect(status().isGone())
+            .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void testRemoveUserShouldReturn404NotFound() throws Exception {
+        Long userId = 1L;
+        String uri = ENDPOINT + "/remove/" + userId;
+
+        Mockito.when(userService.deleteUser(userId)).thenReturn(false);
+
+        mockMvc.perform(delete(uri))
+            .andExpect(status().isNotFound())
+            .andDo(MockMvcResultHandlers.print());
+    }
+
 }
