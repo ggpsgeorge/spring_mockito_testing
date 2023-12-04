@@ -1,0 +1,1 @@
+A REST API with Mockito tests by also using a DTO pattern for certain responses. The Database used was postgresql and all CRUD methods implemented with add, put and remove tests made.

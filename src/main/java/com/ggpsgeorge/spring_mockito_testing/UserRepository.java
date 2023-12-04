@@ -1,4 +1,4 @@
-package com.ggpsgeorge.spring_testing_tutorial;
+package com.ggpsgeorge.spring_mockito_testing;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.ggpsgeorge.spring_testing_tutorial;
+package com.ggpsgeorge.spring_mockito_testing;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,6 +21,7 @@ import org.hamcrest.Matchers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ggpsgeorge.spring_mockito_testing.User.UserBuilder;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTests {
